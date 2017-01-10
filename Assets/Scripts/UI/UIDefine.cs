@@ -12,5 +12,6 @@ public enum EWndID
 {
 	None,						
 
-	UI_Login			=1,		//sorting layer: default		order layer: 0
+	Login			=1,		//sorting layer: default		order layer: 0
+    PveScene              =2,     //sorting layer: default        order layer: 0
 }

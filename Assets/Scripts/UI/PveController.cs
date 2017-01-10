@@ -7,7 +7,7 @@ public class PveController : UIWindow
     [SerializeField] private GameObject m_CardPreb;
     [SerializeField] private GameObject m_StartGameBtn;
 
-    private readonly List<Card> m_CardList = new List<Card>();
+    private readonly List<ECardType> m_CardList = new List<ECardType>();
 
     protected override void PrepareToShow(object uiData)
     {
@@ -25,10 +25,10 @@ public class PveController : UIWindow
     {
         foreach (ECardType cardType in Enum.GetValues(typeof(ECardType)))
         {
-            GameObject cardObj = Instantiate(this.m_CardPreb);
-            Card card = cardObj.GetComponent<Card>();
-            card.CardType = cardType;
-            this.m_CardList.Add(card);
+            for(int i = 0; i < 4; ++i)
+            {
+                this.m_CardList.Add(cardType);
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ public class Card : MonoBehaviour
 
     public void Show()
     {
-        this.m_Text.text = Utility.GetCardNameByType(this.CardType);
+        this.m_Text.text = vp_Utility.GetCardNameByType(this.CardType);
         this.SetVisible(true);
     }
 

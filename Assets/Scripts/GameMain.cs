@@ -4,6 +4,6 @@ public class GameMain : MonoBehaviour
 {
     private void Start()
     {
-        UIManager.ShowUISync(EWndID.UI_Login, null);
+        UIManager.ShowUISync(EWndID.Login, null);
     }
 }

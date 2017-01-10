@@ -48,3 +48,11 @@
     South,
     North
 }
+
+public enum ESeat
+{
+    East,
+    West,
+    South,
+    North
+}
