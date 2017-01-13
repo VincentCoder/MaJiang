@@ -9,12 +9,14 @@ public class GamePlayer : MonoBehaviour
     public int PlayerId { get; private set; }
     public bool IsTing { get; private set; }
     public bool IsDealer { get; private set; }
+    public ESeat Seat { get; private set; }
 
     private readonly Dictionary<ECardType, List<WinSeq>> m_TingDict = new Dictionary<ECardType, List<WinSeq>>();
 
-    public void InitPlayer(int playerId, bool isDealer = false)
+    public void InitPlayer(int playerId, ESeat seat, bool isDealer = false)
     {
         this.PlayerId = playerId;
+        this.Seat = seat;
         this.IsDealer = isDealer;
         this.m_CardArray = new int[34];
     }
@@ -63,9 +65,44 @@ public class GamePlayer : MonoBehaviour
 
     public bool CanWin(ECardType card)
     {
-        if(this.IsTing && this.m_TingDict.ContainsKey(card))
+        return this.IsTing && this.m_TingDict.ContainsKey(card);
+    }
+
+    public bool CanPong(ECardType card)
+    {
+        return this.m_CardArray[(int)card] >= 2;
+    }
+
+    public bool CanKong(ECardType card)
+    {
+        return this.m_CardArray[(int)card] == 3;
+    }
+
+    public bool CanChow(ECardType card)
+    {
+        if(this.IsTiao(card) || this.IsTong(card) || this.IsWan(card))
         {
-            return true;
+            if(card == ECardType.OneTiao || card == ECardType.OneTong || card == ECardType.OneWan)
+            {
+                return this.m_CardArray[(int)card+1] > 0 && this.m_CardArray[(int)card+2] > 0;
+            }
+            if(card == ECardType.TwoTiao || card == ECardType.TwoTong || card == ECardType.TwoWan)
+            {
+                return this.m_CardArray[(int)card+1] > 0 &&
+                       (this.m_CardArray[(int)card-1] > 0 || this.m_CardArray[(int)card+2] > 0);
+            }
+            if(card == ECardType.NineTiao || card == ECardType.NineTong || card == ECardType.NineWan)
+            {
+                return this.m_CardArray[(int)card-1] > 0 && this.m_CardArray[(int)card-2] > 0;
+            }
+            if(card == ECardType.EightTiao || card == ECardType.EightTong || card == ECardType.EightWan)
+            {
+                return this.m_CardArray[(int)card-1] > 0 &&
+                       (this.m_CardArray[(int)card-2] > 0 || this.m_CardArray[(int)card+1] > 0);
+            }
+            return this.m_CardArray[(int)card-1] > 0 && this.m_CardArray[(int)card+1] > 0
+                   || this.m_CardArray[(int)card-1] > 0 && this.m_CardArray[(int)card-2] > 0
+                   || this.m_CardArray[(int)card+1] > 0 && this.m_CardArray[(int)card+2] > 0;
         }
         return false;
     }

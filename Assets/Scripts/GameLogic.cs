@@ -16,22 +16,22 @@ public class GameLogic : MonoBehaviour
     {
         GameObject playerObj = new GameObject("EastPlayer");
         GamePlayer gamePlayer = playerObj.AddComponent<GamePlayer>();
-        gamePlayer.InitPlayer(0);
+        gamePlayer.InitPlayer(0, ESeat.East);
         this.m_PlayerDict.Add(ESeat.East, gamePlayer);
 
         playerObj = new GameObject("WestPlayer");
         gamePlayer = playerObj.AddComponent<GamePlayer>();
-        gamePlayer.InitPlayer(1);
+        gamePlayer.InitPlayer(1, ESeat.West);
         this.m_PlayerDict.Add(ESeat.West, gamePlayer);
 
         playerObj = new GameObject("SouthPlayer");
         gamePlayer = playerObj.AddComponent<GamePlayer>();
-        gamePlayer.InitPlayer(2, true);
+        gamePlayer.InitPlayer(2, ESeat.South, true);
         this.m_PlayerDict.Add(ESeat.South, gamePlayer);
 
         playerObj = new GameObject("NorthPlayer");
         gamePlayer = playerObj.AddComponent<GamePlayer>();
-        gamePlayer.InitPlayer(3);
+        gamePlayer.InitPlayer(3, ESeat.North);
         this.m_PlayerDict.Add(ESeat.North, gamePlayer);
     }
 
@@ -42,6 +42,47 @@ public class GameLogic : MonoBehaviour
         this.m_PlayerDict[ESeat.West].StartPlay(this.GetCardsByCount(13));
         this.m_PlayerDict[ESeat.South].StartPlay(this.GetCardsByCount(13));
         this.m_PlayerDict[ESeat.North].StartPlay(this.GetCardsByCount(13));
+    }
+
+    public void DiscardCard(GamePlayer player, ECardType card)
+    {
+        //Check if anyone win
+        bool anyoneWin = false;
+        for(int i = 1; i < 4; ++i)
+        {
+            ESeat seat = (ESeat)(((int)player.Seat+i)%4);
+            if(this.m_PlayerDict[seat].CanWin(card))
+            {
+                anyoneWin = true;
+                Debug.LogError("Player Id " + this.m_PlayerDict[seat].PlayerId + " Win !");
+            }
+        }
+        if(anyoneWin) return;
+
+        //Check if anyone kong/pong
+        bool anyonePong = false;
+        for(int i = 1; i < 4; ++i)
+        {
+            ESeat seat = (ESeat)(((int)player.Seat + i) % 4);
+            if (this.m_PlayerDict[seat].CanKong(card) || this.m_PlayerDict[seat].CanPong(card))
+            {
+                anyonePong = true;
+            }
+        }
+        if(anyonePong) return;
+
+        //Check if anyone chow
+        bool anyoneChow = false;
+        for (int i = 1; i < 4; ++i)
+        {
+            ESeat seat = (ESeat)(((int)player.Seat + i) % 4);
+            if (this.m_PlayerDict[seat].CanChow(card))
+            {
+                anyoneChow = true;
+            }
+        }
+        if(anyoneChow) return;
+        //todo: something
     }
 
     private List<ECardType> GetCardsByCount(int count)
