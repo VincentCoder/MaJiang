@@ -8,11 +8,14 @@ public class GamePlayer : MonoBehaviour
     private int[] m_CardArray;
     public int PlayerId { get; private set; }
     public bool IsTing { get; private set; }
+    public bool IsDealer { get; private set; }
 
+    private readonly Dictionary<ECardType, List<WinSeq>> m_TingDict = new Dictionary<ECardType, List<WinSeq>>();
 
-    public void InitPlayer(int playerId)
+    public void InitPlayer(int playerId, bool isDealer = false)
     {
         this.PlayerId = playerId;
+        this.IsDealer = isDealer;
         this.m_CardArray = new int[34];
     }
 
@@ -26,14 +29,21 @@ public class GamePlayer : MonoBehaviour
 
     public void DrawCard(ECardType card)
     {
-        int currentCount = this.m_CardArray[(int)card];
-        if (currentCount >= 4)
+        if(this.CanWin(card))
         {
-            Debug.LogError("Max is 4 !");
+            Debug.LogError("Player Id : "+this.PlayerId+" Win !");
         }
         else
         {
-            this.m_CardArray[(int)card] = currentCount + 1;
+            int currentCount = this.m_CardArray[(int)card];
+            if (currentCount >= 4)
+            {
+                Debug.LogError("Max is 4 !");
+            }
+            else
+            {
+                this.m_CardArray[(int)card] = currentCount + 1;
+            }
         }
     }
 
@@ -47,21 +57,17 @@ public class GamePlayer : MonoBehaviour
         else
         {
             this.m_CardArray[(int)card] = currentCount-1;
+            this.CheckTing();
         }
     }
 
-    private bool CheckValid()
+    public bool CanWin(ECardType card)
     {
-        int cardCount = this.GetCardCount(this.m_CardArray);
-        if(cardCount == 1 || cardCount == 4 || cardCount == 7 || cardCount == 10 || cardCount == 13)
+        if(this.IsTing && this.m_TingDict.ContainsKey(card))
         {
             return true;
         }
-        else
-        {
-            Debug.LogError("Player Id : " + this.PlayerId + "，你相公了！！！");
-            return false;
-        }
+        return false;
     }
 
     private int GetCardCount(int[] cards)
@@ -74,7 +80,42 @@ public class GamePlayer : MonoBehaviour
         return sum;
     }
 
-    public List<WinSeq> CanWin(int[] cards)
+    private void CheckTing()
+    {
+        //3*n+1
+        int cardCount = this.GetCardCount(this.m_CardArray);
+        if((cardCount-1)%3 == 0)
+        {
+            this.m_TingDict.Clear();
+            this.IsTing = false;
+            foreach(ECardType cardType in Enum.GetValues(typeof(ECardType)))
+            {
+                int[] copy = new int[this.m_CardArray.Length];
+                this.m_CardArray.CopyTo(copy, 0);
+                copy[(int)cardType] = copy[(int)cardType]+1;
+                List<WinSeq> results = this.CalWinResult(copy);
+                if(results.Count > 0)
+                {
+                    this.m_TingDict.Add(cardType, results);
+                    this.IsTing = true;
+                }
+                //if (results.Count > 0)
+                //{
+                //    Debug.LogError(cardType);
+                //    for (int i = 0; i < results.Count; ++i)
+                //    {
+                //        Debug.LogError(results[i].ToString());
+                //    }
+                //}
+            }
+        }
+        else
+        {
+            Debug.LogError("Player Id : " + this.PlayerId + "，你相公了！！！");
+        }
+    }
+
+    private List<WinSeq> CalWinResult(int[] cards)
     {
         List<WinSeq> results = new List<WinSeq>();
         int cardCount = this.GetCardCount(cards);
@@ -149,39 +190,6 @@ public class GamePlayer : MonoBehaviour
                     }
                 }
                 return;
-            }
-        }
-    }
-
-    private void IsAllMelds(int[] cards)
-    {
-        int[,] result = new int[4,3];
-        int index = 0;
-        for(int i = 0; i < cards.Length; ++i)
-        {
-            if(cards[i] == 0)
-            {
-                continue;
-            }
-            else if(cards[i] == 1)
-            {
-                if(!this.IsTiao((ECardType)i) && !this.IsTong((ECardType)i) && !this.IsWan((ECardType)i))
-                {
-                    continue;
-                }
-                if(i < cards.Length-2 && cards[i + 1] > 0 && cards[i+2] > 0)
-                {
-                    if(this.IsMeld((ECardType)i, (ECardType)(i + 1), (ECardType)(i + 2)))
-                    {
-                        cards[i] = cards[i] - 1;
-                        cards[i + 1] = cards[i + 1] - 1;
-                        cards[i + 2] = cards[i + 2] - 1;
-                        result[index, 0] = i;
-                        result[index, 1] = i+1;
-                        result[index, 2] = i+2;
-                        index ++;
-                    }
-                }
             }
         }
     }
